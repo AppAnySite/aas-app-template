@@ -31,64 +31,34 @@ const lightTheme: Theme = {
     xxl: 48,
   },
   borderRadius: {
+    xs: 2,
     sm: 4,
     md: 8,
     lg: 12,
     xl: 16,
+    round: 50,
   },
   typography: {
-    h1: {
-      fontSize: 32,
-      fontWeight: '700',
-      lineHeight: 40,
-      letterSpacing: -0.5,
+    fontFamily: {
+      regular: 'System',
+      medium: 'System',
+      bold: 'System',
     },
-    h2: {
-      fontSize: 28,
-      fontWeight: '600',
-      lineHeight: 36,
-      letterSpacing: -0.25,
+    fontSize: {
+      xs: 12,
+      sm: 14,
+      md: 16,
+      lg: 18,
+      xl: 20,
+      xxl: 24,
     },
-    h3: {
-      fontSize: 24,
-      fontWeight: '600',
-      lineHeight: 32,
-    },
-    h4: {
-      fontSize: 20,
-      fontWeight: '600',
-      lineHeight: 28,
-    },
-    h5: {
-      fontSize: 18,
-      fontWeight: '500',
-      lineHeight: 24,
-    },
-    h6: {
-      fontSize: 16,
-      fontWeight: '500',
-      lineHeight: 22,
-    },
-    body1: {
-      fontSize: 16,
-      fontWeight: '400',
-      lineHeight: 24,
-    },
-    body2: {
-      fontSize: 14,
-      fontWeight: '400',
-      lineHeight: 20,
-    },
-    caption: {
-      fontSize: 12,
-      fontWeight: '400',
-      lineHeight: 16,
-    },
-    button: {
-      fontSize: 16,
-      fontWeight: '600',
-      lineHeight: 24,
-      textAlign: 'center',
+    lineHeight: {
+      xs: 16,
+      sm: 20,
+      md: 24,
+      lg: 28,
+      xl: 32,
+      xxl: 36,
     },
   },
 };
@@ -122,64 +92,34 @@ const darkTheme: Theme = {
     xxl: 48,
   },
   borderRadius: {
+    xs: 2,
     sm: 4,
     md: 8,
     lg: 12,
     xl: 16,
+    round: 50,
   },
   typography: {
-    h1: {
-      fontSize: 32,
-      fontWeight: '700',
-      lineHeight: 40,
-      letterSpacing: -0.5,
+    fontFamily: {
+      regular: 'System',
+      medium: 'System',
+      bold: 'System',
     },
-    h2: {
-      fontSize: 28,
-      fontWeight: '600',
-      lineHeight: 36,
-      letterSpacing: -0.25,
+    fontSize: {
+      xs: 12,
+      sm: 14,
+      md: 16,
+      lg: 18,
+      xl: 20,
+      xxl: 24,
     },
-    h3: {
-      fontSize: 24,
-      fontWeight: '600',
-      lineHeight: 32,
-    },
-    h4: {
-      fontSize: 20,
-      fontWeight: '600',
-      lineHeight: 28,
-    },
-    h5: {
-      fontSize: 18,
-      fontWeight: '500',
-      lineHeight: 24,
-    },
-    h6: {
-      fontSize: 16,
-      fontWeight: '500',
-      lineHeight: 22,
-    },
-    body1: {
-      fontSize: 16,
-      fontWeight: '400',
-      lineHeight: 24,
-    },
-    body2: {
-      fontSize: 14,
-      fontWeight: '400',
-      lineHeight: 20,
-    },
-    caption: {
-      fontSize: 12,
-      fontWeight: '400',
-      lineHeight: 16,
-    },
-    button: {
-      fontSize: 16,
-      fontWeight: '600',
-      lineHeight: 24,
-      textAlign: 'center',
+    lineHeight: {
+      xs: 16,
+      sm: 20,
+      md: 24,
+      lg: 28,
+      xl: 32,
+      xxl: 36,
     },
   },
 };
@@ -193,6 +133,9 @@ interface ThemeContextType {
   toggleTheme: () => void;
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
   currentThemeMode: 'light' | 'dark' | 'system';
+  setCustomThemeOverrides: (overrides: Partial<Theme>) => void;
+  clearCustomThemeOverrides: () => void;
+  getThemeHistory: () => Array<{ mode: 'light' | 'dark' | 'system'; timestamp: number }>;
 }
 
 /**
@@ -212,27 +155,56 @@ interface ThemeProviderProps {
  * Theme provider component
  * Manages theme state and provides theme context to the app
  */
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({
+export const ThemeProvider = ({
   children,
   initialTheme = 'system',
-}) => {
+}: ThemeProviderProps) => {
   const systemColorScheme = useColorScheme();
-  const [themeMode, setThemeMode] = useState<'light' | 'dark' | 'system'>(initialTheme);
+  const [themeMode, setThemeMode] = useState<'light' | 'dark' | 'system'>(initialTheme as 'light' | 'dark' | 'system');
+  const [customTheme, setCustomTheme] = useState<Partial<Theme> | null>(null);
+  const [themeHistory, setThemeHistory] = useState<Array<{ mode: 'light' | 'dark' | 'system'; timestamp: number }>>([]);
 
   // Determine the actual theme based on mode and system preference
   const getActualTheme = (): Theme => {
+    let baseTheme: Theme;
+    
     if (themeMode === 'system') {
-      return systemColorScheme === 'dark' ? darkTheme : lightTheme;
+      baseTheme = systemColorScheme === 'dark' ? darkTheme : lightTheme;
+    } else {
+      baseTheme = themeMode === 'dark' ? darkTheme : lightTheme;
     }
-    return themeMode === 'dark' ? darkTheme : lightTheme;
+
+    // Apply custom theme overrides if available
+    if (customTheme) {
+      return mergeThemes(baseTheme, customTheme);
+    }
+
+    return baseTheme;
   };
 
   const [theme, setThemeState] = useState<Theme>(getActualTheme());
 
   // Update theme when system color scheme changes
   useEffect(() => {
-    setThemeState(getActualTheme());
-  }, [themeMode, systemColorScheme]);
+    const newTheme = getActualTheme();
+    setThemeState(newTheme);
+    
+    // Log theme change
+    console.log('Theme changed:', {
+      mode: themeMode,
+      systemColorScheme,
+      hasCustomTheme: !!customTheme,
+    });
+  }, [themeMode, systemColorScheme, customTheme]);
+
+  // Track theme history
+  useEffect(() => {
+    setThemeHistory(prev => {
+      const newHistory = [...prev, { mode: themeMode, timestamp: Date.now() }];
+      // Keep only last 10 theme changes
+      return newHistory.slice(-10);
+    });
+  }, [themeMode]);
 
   /**
    * Toggle between light and dark themes
@@ -253,12 +225,36 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     setThemeMode(newThemeMode);
   };
 
+  /**
+   * Set custom theme overrides
+   */
+  const setCustomThemeOverrides = (overrides: Partial<Theme>) => {
+    setCustomTheme(overrides);
+  };
+
+  /**
+   * Clear custom theme overrides
+   */
+  const clearCustomThemeOverrides = () => {
+    setCustomTheme(null);
+  };
+
+  /**
+   * Get theme history
+   */
+  const getThemeHistory = () => {
+    return [...themeHistory];
+  };
+
   const contextValue: ThemeContextType = {
     theme,
     isDark: theme === darkTheme,
     toggleTheme,
     setTheme,
     currentThemeMode: themeMode,
+    setCustomThemeOverrides,
+    clearCustomThemeOverrides,
+    getThemeHistory,
   };
 
   return (
@@ -318,6 +314,36 @@ export const createThemedStyles = <T extends Record<string, any>>(
   styleFactory: (theme: Theme) => T
 ) => {
   return styleFactory;
+};
+
+/**
+ * Merge themes with custom overrides
+ */
+const mergeThemes = (baseTheme: Theme, overrides: Partial<Theme>): Theme => {
+  return {
+    ...baseTheme,
+    ...overrides,
+    colors: {
+      ...baseTheme.colors,
+      ...overrides.colors,
+      text: {
+        ...baseTheme.colors.text,
+        ...overrides.colors?.text,
+      },
+    },
+    spacing: {
+      ...baseTheme.spacing,
+      ...overrides.spacing,
+    },
+    borderRadius: {
+      ...baseTheme.borderRadius,
+      ...overrides.borderRadius,
+    },
+    typography: {
+      ...baseTheme.typography,
+      ...overrides.typography,
+    },
+  };
 };
 
 /**

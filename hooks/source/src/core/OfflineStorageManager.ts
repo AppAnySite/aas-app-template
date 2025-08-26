@@ -10,12 +10,22 @@ class OfflineStorageManager {
   private static instance: OfflineStorageManager;
   private database: Map<string, OfflineData> = new Map();
   private analytics: OfflineAnalytics = {
+    totalItems: 0,
+    pendingItems: 0,
+    syncedItems: 0,
+    failedItems: 0,
+    lastSyncTime: 0,
+    totalStorageUsed: 0,
+    totalItemsStored: 0,
+    totalItemsSynced: 0,
+    totalSyncFailures: 0,
+    averageSyncTime: 0,
+    lastSyncTimestamp: 0,
+    cachedPages: 0,
     offlineSessions: 0,
     offlineDuration: 0,
-    cachedPages: 0,
     syncAttempts: 0,
     syncSuccessRate: 0,
-    lastSyncTime: 0,
   };
   private isInitialized = false;
   private maxSize = 1000; // Maximum number of items in database

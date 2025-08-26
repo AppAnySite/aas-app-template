@@ -303,6 +303,113 @@ class PerformanceMonitor {
   }
 
   /**
+   * Get performance insights and recommendations
+   */
+  public getPerformanceInsights(): {
+    issues: Array<{ type: string; severity: 'low' | 'medium' | 'high'; description: string; recommendation: string }>;
+    trends: Array<{ metric: string; trend: 'improving' | 'stable' | 'degrading'; change: number }>;
+    recommendations: string[];
+  } {
+    const insights = {
+      issues: [] as Array<{ type: string; severity: 'low' | 'medium' | 'high'; description: string; recommendation: string }>,
+      trends: [] as Array<{ metric: string; trend: 'improving' | 'stable' | 'degrading'; change: number }>,
+      recommendations: [] as string[],
+    };
+
+    // Analyze recent metrics for issues
+    const recentMetrics = this.metrics.slice(-100); // Last 100 metrics
+    
+    // Check for slow render times
+    const renderTimes = recentMetrics.filter(m => m.type === MetricType.RENDER_TIME);
+    const avgRenderTime = renderTimes.length > 0 ? renderTimes.reduce((sum, m) => sum + m.value, 0) / renderTimes.length : 0;
+    
+    if (avgRenderTime > 33) {
+      insights.issues.push({
+        type: 'slow_rendering',
+        severity: avgRenderTime > 66 ? 'high' : 'medium',
+        description: `Average render time is ${avgRenderTime.toFixed(1)}ms`,
+        recommendation: 'Consider optimizing component rendering or reducing UI complexity',
+      });
+    }
+
+    // Check for memory issues
+    const memoryUsage = recentMetrics.filter(m => m.type === MetricType.MEMORY_USAGE);
+    const maxMemory = memoryUsage.length > 0 ? Math.max(...memoryUsage.map(m => m.value)) : 0;
+    
+    if (maxMemory > 500) {
+      insights.issues.push({
+        type: 'high_memory_usage',
+        severity: maxMemory > 800 ? 'high' : 'medium',
+        description: `Peak memory usage is ${maxMemory.toFixed(0)}MB`,
+        recommendation: 'Check for memory leaks and optimize image loading',
+      });
+    }
+
+    // Check for slow network requests
+    const networkRequests = recentMetrics.filter(m => m.type === MetricType.NETWORK_REQUEST);
+    const slowRequests = networkRequests.filter(m => m.value > 5000).length;
+    
+    if (slowRequests > 0) {
+      insights.issues.push({
+        type: 'slow_network_requests',
+        severity: slowRequests > 5 ? 'high' : 'medium',
+        description: `${slowRequests} network requests took longer than 5 seconds`,
+        recommendation: 'Consider implementing caching or optimizing API calls',
+      });
+    }
+
+    // Analyze trends
+    const metricTypes = Object.values(MetricType);
+    metricTypes.forEach(type => {
+      const typeMetrics = recentMetrics.filter(m => m.type === type);
+      if (typeMetrics.length >= 10) {
+        const firstHalf = typeMetrics.slice(0, Math.floor(typeMetrics.length / 2));
+        const secondHalf = typeMetrics.slice(Math.floor(typeMetrics.length / 2));
+        
+        const firstAvg = firstHalf.reduce((sum, m) => sum + m.value, 0) / firstHalf.length;
+        const secondAvg = secondHalf.reduce((sum, m) => sum + m.value, 0) / secondHalf.length;
+        
+        const change = ((secondAvg - firstAvg) / firstAvg) * 100;
+        
+        let trend: 'improving' | 'stable' | 'degrading' = 'stable';
+        if (change < -10) trend = 'improving';
+        else if (change > 10) trend = 'degrading';
+        
+        insights.trends.push({
+          metric: type,
+          trend,
+          change: Math.abs(change),
+        });
+      }
+    });
+
+    // Generate recommendations
+    if (insights.issues.length === 0) {
+      insights.recommendations.push('Performance is within acceptable ranges');
+    } else {
+      insights.recommendations.push('Monitor performance metrics regularly');
+      insights.recommendations.push('Consider implementing performance budgets');
+    }
+
+    return insights;
+  }
+
+  /**
+   * Export performance report
+   */
+  public exportPerformanceReport(): string {
+    const report = {
+      summary: this.getMetricsSummary(),
+      insights: this.getPerformanceInsights(),
+      recentMetrics: this.metrics.slice(-50), // Last 50 metrics
+      thresholds: Array.from(this.thresholds.values()),
+      timestamp: Date.now(),
+    };
+
+    return JSON.stringify(report, null, 2);
+  }
+
+  /**
    * Enable/disable performance monitoring
    */
   public setEnabled(enabled: boolean): void {

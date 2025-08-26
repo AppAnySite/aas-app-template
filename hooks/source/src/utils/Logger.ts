@@ -36,7 +36,7 @@ class Logger {
   private constructor() {
     const config = AppConfiguration.getConfig();
     this.logLevel = config.environment === 'production' ? LogLevel.WARN : LogLevel.DEBUG;
-    this.isEnabled = config.environment !== 'production' || __DEV__;
+    this.isEnabled = config.environment !== 'production';
   }
 
   public static getInstance(): Logger {
@@ -138,7 +138,7 @@ class Logger {
     }
 
     // In production, you might want to send logs to a remote service
-    if (level >= LogLevel.ERROR && !__DEV__) {
+    if (level >= LogLevel.ERROR) {
       this.sendToRemoteService(entry);
     }
   }
@@ -157,12 +157,79 @@ class Logger {
   }
 
   /**
-   * Send log entry to remote service (placeholder)
+   * Send log entry to remote service with enhanced capabilities
    */
   private sendToRemoteService(entry: LogEntry): void {
-    // In a real app, you would send this to your logging service
-    // For example: Sentry, LogRocket, or your own API
-    console.log('Sending to remote service:', entry);
+    try {
+      // In a real app, you would send this to your logging service
+      // For example: Sentry, LogRocket, or your own API
+      
+      // Prepare payload for remote service
+      const payload = {
+        timestamp: entry.timestamp,
+        level: LogLevel[entry.level],
+        message: entry.message,
+        data: entry.data,
+        error: entry.error ? {
+          name: entry.error.name,
+          message: entry.error.message,
+          stack: entry.error.stack,
+        } : undefined,
+        context: entry.context,
+        sessionId: this.getSessionId(),
+        userId: this.getUserId(),
+        deviceInfo: this.getDeviceInfo(),
+        appVersion: this.getAppVersion(),
+      };
+
+      // Simulate remote service call
+      console.log('Sending to remote service:', payload);
+      
+      // In production, you would use fetch or a dedicated service
+      // fetch('https://logs.example.com/api/logs', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(payload),
+      // });
+      
+    } catch (error) {
+      console.error('Failed to send log to remote service:', error);
+    }
+  }
+
+  /**
+   * Get session ID for logging
+   */
+  private getSessionId(): string {
+    // In a real app, you would get this from your session manager
+    return 'session-' + Date.now();
+  }
+
+  /**
+   * Get user ID for logging
+   */
+  private getUserId(): string | undefined {
+    // In a real app, you would get this from your auth manager
+    return undefined;
+  }
+
+  /**
+   * Get device info for logging
+   */
+  private getDeviceInfo(): Record<string, any> {
+    // In a real app, you would get this from device info service
+    return {
+      platform: 'react-native',
+      version: '1.0.0',
+    };
+  }
+
+  /**
+   * Get app version for logging
+   */
+  private getAppVersion(): string {
+    // In a real app, you would get this from your app config
+    return '1.0.0';
   }
 
   /**

@@ -1,69 +1,9 @@
-// Core application types
-export interface AppConfig {
-  name: string;
-  version: string;
-  buildNumber: string;
-  environment: 'development' | 'staging' | 'production';
-  apiBaseUrl: string;
-  webViewUrl: string;
-  enableAnalytics: boolean;
-  enableCrashReporting: boolean;
-  enablePushNotifications: boolean;
-}
+/**
+ * Global Types
+ * Centralized type definitions used across the application
+ */
 
-// WebView configuration types
-export interface WebViewConfig {
-  url: string;
-  title: string;
-  userAgent?: string;
-  allowFileAccess?: boolean;
-  allowUniversalAccessFromFileURLs?: boolean;
-  allowFileAccessFromFileURLs?: boolean;
-  javaScriptEnabled?: boolean;
-  domStorageEnabled?: boolean;
-  startInLoadingState?: boolean;
-  scalesPageToFit?: boolean;
-  allowsInlineMediaPlayback?: boolean;
-  mediaPlaybackRequiresUserAction?: boolean;
-  allowsFullscreenVideo?: boolean;
-  mixedContentMode?: 'never' | 'always' | 'compatibility';
-  cacheEnabled?: boolean;
-  cacheMode?: 'LOAD_DEFAULT' | 'LOAD_NO_CACHE' | 'LOAD_CACHE_ELSE_NETWORK' | 'LOAD_CACHE_ONLY';
-  onShouldStartLoadWithRequest?: (request: WebViewRequest) => boolean;
-  onNavigationStateChange?: (navState: NavigationState) => void;
-  onError?: (error: WebViewError) => void;
-  onLoadStart?: () => void;
-  onLoadEnd?: () => void;
-  onMessage?: (message: WebViewMessage) => void;
-}
-
-export interface WebViewRequest {
-  url: string;
-  mainDocumentURL?: string;
-  navigationType: 'click' | 'formsubmit' | 'backforward' | 'reload' | 'formresubmit' | 'other';
-}
-
-export interface NavigationState {
-  url: string;
-  title: string;
-  loading: boolean;
-  canGoBack: boolean;
-  canGoForward: boolean;
-  lockIdentifier: number;
-}
-
-export interface WebViewError {
-  code: number;
-  description: string;
-  url: string;
-}
-
-export interface WebViewMessage {
-  data: string;
-  url: string;
-}
-
-// Theme and styling types
+// Theme Types
 export interface Theme {
   colors: {
     primary: string;
@@ -89,237 +29,294 @@ export interface Theme {
     xl: number;
     xxl: number;
   };
+  typography: {
+    fontFamily: {
+      regular: string;
+      medium: string;
+      bold: string;
+    };
+    fontSize: {
+      xs: number;
+      sm: number;
+      md: number;
+      lg: number;
+      xl: number;
+      xxl: number;
+    };
+    lineHeight: {
+      xs: number;
+      sm: number;
+      md: number;
+      lg: number;
+      xl: number;
+      xxl: number;
+    };
+  };
   borderRadius: {
+    xs: number;
     sm: number;
     md: number;
     lg: number;
     xl: number;
-  };
-  typography: {
-    h1: TextStyle;
-    h2: TextStyle;
-    h3: TextStyle;
-    h4: TextStyle;
-    h5: TextStyle;
-    h6: TextStyle;
-    body1: TextStyle;
-    body2: TextStyle;
-    caption: TextStyle;
-    button: TextStyle;
+    round: number;
   };
 }
 
 export interface TextStyle {
-  fontSize: number;
-  fontWeight: 'normal' | 'bold' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900';
-  lineHeight?: number;
-  letterSpacing?: number;
+  fontSize?: number;
+  fontWeight?: string;
+  color?: string;
   textAlign?: 'auto' | 'left' | 'right' | 'center' | 'justify';
 }
 
-// Analytics and tracking types
-export interface AnalyticsEvent {
-  name: string;
-  properties?: Record<string, any>;
-  timestamp: number;
-  sessionId: string;
-  userId?: string;
-}
-
-export interface CrashReport {
-  error: Error;
-  stackTrace: string;
-  deviceInfo: DeviceInfo;
-  appVersion: string;
-  timestamp: number;
-  userId?: string;
-}
-
-// Device and platform types
-export interface DeviceInfo {
-  id: string;
-  name: string;
-  model: string;
-  systemName: string;
-  systemVersion: string;
-  appVersion: string;
-  buildNumber: string;
-  bundleId: string;
-  isTablet: boolean;
-  isEmulator: boolean;
-  screenWidth: number;
-  screenHeight: number;
-  screenScale: number;
-  totalMemory: number;
-  freeMemory: number;
-  batteryLevel: number;
-  isCharging: boolean;
-  networkType: 'wifi' | 'cellular' | 'none';
-  carrier?: string;
-  timezone: string;
-  locale: string;
-}
-
-// Network and API types
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: any;
-  };
-  timestamp: number;
-  requestId: string;
-}
-
-export interface NetworkState {
-  isConnected: boolean;
-  isInternetReachable: boolean;
-  type: 'wifi' | 'cellular' | 'none';
-  isExpensive: boolean;
-}
-
-// State management types
-export interface AppState {
-  config: AppConfig;
-  theme: Theme;
-  device: DeviceInfo;
-  network: NetworkState;
-  webView: WebViewState;
-  analytics: AnalyticsState;
-  errors: ErrorState;
-}
-
+// WebView Types
 export interface WebViewState {
   isLoading: boolean;
   canGoBack: boolean;
   canGoForward: boolean;
   currentUrl: string;
   title: string;
+  navigationHistory: string[];
   error?: WebViewError;
-  navigationHistory: NavigationState[];
 }
 
-export interface AnalyticsState {
-  sessionId: string;
-  userId?: string;
-  events: AnalyticsEvent[];
-  isEnabled: boolean;
+export interface WebViewError {
+  code: string | number;
+  description: string;
+  url?: string;
+  timestamp: number;
 }
 
-export interface ErrorState {
-  errors: CrashReport[];
-  isReportingEnabled: boolean;
+export interface WebViewMessage {
+  type: string;
+  data: any;
+  timestamp: number;
+  url?: string;
 }
 
-// Component prop types
-export interface BaseComponentProps {
-  testID?: string;
-  accessibilityLabel?: string;
-  accessibilityHint?: string;
-  accessibilityRole?: string;
-  style?: any;
-  children?: React.ReactNode;
+export interface WebViewConfig {
+  url: string;
+  title: string;
+  userAgent?: string;
+  javaScriptEnabled?: boolean;
+  domStorageEnabled?: boolean;
+  startInLoadingState?: boolean;
+  scalesPageToFit?: boolean;
+  allowsInlineMediaPlayback?: boolean;
+  mediaPlaybackRequiresUserAction?: boolean;
+  allowsFullscreenVideo?: boolean;
+  mixedContentMode?: string;
+  cacheEnabled?: boolean;
+  cacheMode?: string;
+  allowFileAccess?: boolean;
+  allowUniversalAccessFromFileURLs?: boolean;
+  allowFileAccessFromFileURLs?: boolean;
+  pullToRefreshEnabled?: boolean;
+  timeout?: number;
+  retryAttempts?: number;
+  offlineMessage?: string;
+  onShouldStartLoadWithRequest?: (request: any) => boolean;
+  onNavigationStateChange?: (state: any) => void;
+  onError?: (error: any) => void;
+  onLoadStart?: () => void;
+  onLoadEnd?: () => void;
+  onMessage?: (message: any) => void;
 }
 
-export interface WebViewComponentProps extends BaseComponentProps {
-  config: WebViewConfig;
-  onStateChange?: (state: WebViewState) => void;
-  onError?: (error: WebViewError) => void;
-  onMessage?: (message: WebViewMessage) => void;
-}
-
-export interface LoadingComponentProps extends BaseComponentProps {
-  size?: 'small' | 'large';
-  color?: string;
+// Component Props Types
+export interface LoadingComponentProps {
+  isLoading?: boolean;
+  message?: string;
   text?: string;
+  size?: 'small' | 'medium' | 'large';
+  color?: string;
+  style?: any;
   showSpinner?: boolean;
+  testID?: string;
 }
 
-export interface WatermarkConfig {
-  enabled: boolean;
-  text: string;
-  subtext: string;
-  position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center';
-  opacity: number;
-  color: string;
-  fontSize: number;
-  subtextFontSize: number;
-  padding: number;
-  cornerRadius: number;
-  backgroundColor: string;
-  showInScreenshots: boolean;
-  showInProduction: boolean;
-  showInDevelopment: boolean;
-}
-
-export interface ErrorComponentProps extends BaseComponentProps {
+export interface ErrorComponentProps {
   error: WebViewError;
   onRetry?: () => void;
+  onDismiss?: () => void;
   onGoBack?: () => void;
   showRetryButton?: boolean;
   showGoBackButton?: boolean;
   customMessages?: {
-    network?: string;
+    retry?: string;
+    goBack?: string;
+    dismiss?: string;
     timeout?: string;
+    network?: string;
     server?: string;
+  };
+  testID?: string;
+  style?: any;
+}
+
+export interface WatermarkConfig {
+  enabled: boolean;
+  text?: string;
+  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center';
+  opacity?: number;
+  fontSize?: number;
+  color?: string;
+}
+
+// App Configuration Types
+export interface AppConfig {
+  name: string;
+  version: string;
+  buildNumber: string;
+  environment: 'development' | 'staging' | 'production';
+  bundleId: string;
+  displayName: string;
+  apiBaseUrl?: string;
+  theme: {
+    defaultMode: 'light' | 'dark' | 'system';
+    light: Theme;
+    dark: Theme;
+  };
+  features: {
+    [key: string]: {
+      enabled: boolean;
+      [key: string]: any;
+    };
+  };
+  enableAnalytics?: boolean;
+  enableCrashReporting?: boolean;
+  enablePushNotifications?: boolean;
+}
+
+// Offline Types
+export interface OfflineData {
+  id: string;
+  type: string;
+  data: any;
+  timestamp: number;
+  syncStatus: 'pending' | 'synced' | 'failed';
+  retryCount: number;
+}
+
+export interface OfflineAnalytics {
+  totalItems: number;
+  pendingItems: number;
+  syncedItems: number;
+  failedItems: number;
+  lastSyncTime?: number;
+  totalStorageUsed: number;
+  totalItemsStored: number;
+  totalItemsSynced: number;
+  totalSyncFailures: number;
+  averageSyncTime: number;
+  lastSyncTimestamp: number;
+  cachedPages: number;
+  offlineSessions: number;
+  offlineDuration: number;
+  syncAttempts: number;
+  syncSuccessRate: number;
+}
+
+export interface SyncResult {
+  success: boolean;
+  syncedItems: number;
+  failedItems: number;
+  errors?: string[];
+  timestamp: number;
+}
+
+export interface OfflineConfig {
+  enabled: boolean;
+  maxStorageSize: number;
+  syncInterval: number;
+  retryAttempts: number;
+  sync?: {
+    autoSync: boolean;
+    syncInterval: number;
+    maxRetries: number;
   };
 }
 
-// Utility types
-export type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-};
-
-export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-
-export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
-
-// Event types
-export type AppEvent = 
-  | { type: 'APP_INITIALIZED'; payload: AppConfig }
-  | { type: 'THEME_CHANGED'; payload: Theme }
-  | { type: 'NETWORK_STATE_CHANGED'; payload: NetworkState }
-  | { type: 'WEBVIEW_LOAD_START'; payload: { url: string } }
-  | { type: 'WEBVIEW_LOAD_END'; payload: { url: string } }
-  | { type: 'WEBVIEW_ERROR'; payload: WebViewError }
-  | { type: 'WEBVIEW_MESSAGE'; payload: WebViewMessage }
-  | { type: 'ANALYTICS_EVENT'; payload: AnalyticsEvent }
-  | { type: 'CRASH_REPORTED'; payload: CrashReport };
-
-// Hook return types
-export interface UseWebViewReturn {
-  state: WebViewState;
-  ref: React.RefObject<any>;
-  goBack: () => void;
-  goForward: () => void;
-  reload: () => void;
-  stopLoading: () => void;
-  injectJavaScript: (script: string) => void;
-  postMessage: (message: string) => void;
+// Accessibility Types
+export interface AccessibilityState {
+  isEnabled: boolean;
+  isScreenReaderEnabled: boolean;
+  isReduceMotionEnabled: boolean;
+  isReduceTransparencyEnabled: boolean;
+  isInvertColorsEnabled: boolean;
+  isBoldTextEnabled: boolean;
+  isGrayscaleEnabled: boolean;
+  isHighContrastEnabled: boolean;
+  isLargeTextEnabled: boolean;
+  isVoiceOverEnabled: boolean;
+  isTalkBackEnabled: boolean;
 }
 
-export interface UseAnalyticsReturn {
-  trackEvent: (name: string, properties?: Record<string, any>) => void;
-  setUser: (userId: string, properties?: Record<string, any>) => void;
-  trackScreen: (screenName: string, properties?: Record<string, any>) => void;
-  trackError: (error: Error, properties?: Record<string, any>) => void;
+export interface AccessibilityEvent {
+  type: string;
+  data: any;
+  timestamp: number;
 }
 
-export interface UseNetworkReturn {
-  state: NetworkState;
-  isConnected: boolean;
-  isInternetReachable: boolean;
-  networkType: string;
+export interface AccessibilityAction {
+  id: string;
+  label: string;
+  action: () => void;
+}
+
+// Performance Types
+export interface PerformanceMetric {
+  id: string;
+  type: string;
+  name: string;
+  value: number;
+  unit: string;
+  timestamp: number;
+  metadata?: any;
+}
+
+export interface PerformanceThreshold {
+  id: string;
+  type: string;
+  name: string;
+  threshold: number;
+  operator: 'gt' | 'lt' | 'eq' | 'gte' | 'lte';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+}
+
+export type MetricType = 'memory' | 'cpu' | 'network' | 'render' | 'custom';
+
+// Security Types
+export interface SecurityEvent {
+  id: string;
+  type: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  description: string;
+  timestamp: number;
+  metadata?: any;
+}
+
+export interface SecurityValidationResult {
+  isValid: boolean;
+  threats: string[];
+  recommendations: string[];
 }
 
 // Deep Linking Types
+export interface DeepLinkResult {
+  success: boolean;
+  url: string;
+  source: string;
+  handled: boolean;
+  shouldOpenInApp: boolean;
+  shouldRedirectToBrowser: boolean;
+  reason: string;
+  timestamp: number;
+}
+
 export interface DeepLinkConfig {
   enabled: boolean;
   scheme: string;
-  allowedDomains: string[];
-  redirectToBrowser: boolean;
   customScheme?: string;
   universalLinks?: {
     enabled: boolean;
@@ -327,66 +324,23 @@ export interface DeepLinkConfig {
   };
 }
 
-export interface DeepLinkData {
+export interface DeepLinkHandler {
+  pattern: string;
+  handler: (url: string, params: Record<string, string>) => void;
+}
+
+// Navigation Types
+export interface NavigationState {
   url: string;
-  source: 'app' | 'browser' | 'notification' | 'external';
-  timestamp: number;
-  metadata?: Record<string, any>;
+  title: string;
+  loading: boolean;
+  canGoBack: boolean;
+  canGoForward: boolean;
+  lockIdentifier?: number;
 }
 
-export interface DeepLinkResult {
-  handled: boolean;
-  shouldOpenInApp: boolean;
-  shouldRedirectToBrowser: boolean;
-  reason: string;
-  url: string;
-}
-
-// Offline Types
-export interface OfflineConfig {
-  enabled: boolean;
-  indicator: {
-    enabled: boolean;
-    position: 'top' | 'bottom' | 'floating';
-    style: 'banner' | 'toast' | 'badge';
-    autoHide: boolean;
-    hideDelay: number;
-  };
-  sync: {
-    enabled: boolean;
-    autoSync: boolean;
-    syncInterval: number;
-    maxRetries: number;
-  };
-  storage: {
-    enabled: boolean;
-    maxSize: number;
-    cleanupInterval: number;
-  };
-}
-
-export interface OfflineData {
-  id: string;
-  type: 'page' | 'config' | 'analytics' | 'user_data';
-  data: any;
-  timestamp: number;
-  syncStatus: 'pending' | 'synced' | 'failed';
-  retryCount: number;
-}
-
-export interface SyncResult {
-  success: boolean;
-  syncedItems: number;
-  failedItems: number;
-  errors: string[];
-  timestamp: number;
-}
-
-export interface OfflineAnalytics {
-  offlineSessions: number;
-  offlineDuration: number;
-  cachedPages: number;
-  syncAttempts: number;
-  syncSuccessRate: number;
-  lastSyncTime: number;
+// Network Types
+export interface NetworkStatusComponentProps {
+  testID?: string;
+  style?: any;
 }

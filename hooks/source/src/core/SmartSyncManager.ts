@@ -17,7 +17,7 @@ class SmartSyncManager {
   private config: OfflineConfig | null = null;
   private isInitialized = false;
   private isSyncing = false;
-  private syncInterval: NodeJS.Timeout | null = null;
+  private syncInterval: any = null;
   private retryQueue: OfflineData[] = [];
   private syncHistory: SyncResult[] = [];
 
@@ -261,7 +261,7 @@ class SmartSyncManager {
    */
   private async syncPageData(item: OfflineData): Promise<boolean> {
     // Simulate page data sync
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise<void>(resolve => setTimeout(resolve, 100));
     return Math.random() > 0.1; // 90% success rate
   }
 
@@ -270,7 +270,7 @@ class SmartSyncManager {
    */
   private async syncConfigData(item: OfflineData): Promise<boolean> {
     // Simulate config sync
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
     return Math.random() > 0.05; // 95% success rate
   }
 
@@ -279,7 +279,7 @@ class SmartSyncManager {
    */
   private async syncAnalyticsData(item: OfflineData): Promise<boolean> {
     // Simulate analytics sync
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise<void>(resolve => setTimeout(resolve, 200));
     return Math.random() > 0.15; // 85% success rate
   }
 
@@ -288,7 +288,7 @@ class SmartSyncManager {
    */
   private async syncUserData(item: OfflineData): Promise<boolean> {
     // Simulate user data sync
-    await new Promise(resolve => setTimeout(resolve, 150));
+    await new Promise<void>(resolve => setTimeout(resolve, 150));
     return Math.random() > 0.08; // 92% success rate
   }
 
@@ -314,7 +314,7 @@ class SmartSyncManager {
     for (const item of items) {
       await this.syncItem(item);
       // Add delay between retries
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise<void>(resolve => setTimeout(resolve, 1000));
     }
   }
 

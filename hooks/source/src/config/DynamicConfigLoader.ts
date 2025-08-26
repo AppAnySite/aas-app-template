@@ -12,28 +12,6 @@ export interface AppConfigJson {
     bundleId: string;
     displayName: string;
   };
-  webView: {
-    url: string;
-    title: string;
-    userAgent: string;
-    javaScriptEnabled: boolean;
-    domStorageEnabled: boolean;
-    startInLoadingState: boolean;
-    scalesPageToFit: boolean;
-    allowsInlineMediaPlayback: boolean;
-    mediaPlaybackRequiresUserAction: boolean;
-    allowsFullscreenVideo: boolean;
-    mixedContentMode: 'never' | 'always' | 'compatibility';
-    cacheEnabled: boolean;
-    cacheMode: 'LOAD_DEFAULT' | 'LOAD_NO_CACHE' | 'LOAD_CACHE_ELSE_NETWORK' | 'LOAD_CACHE_ONLY';
-    allowFileAccess: boolean;
-    allowUniversalAccessFromFileURLs: boolean;
-    allowFileAccessFromFileURLs: boolean;
-    pullToRefreshEnabled: boolean;
-    timeout: number;
-    retryAttempts: number;
-    offlineMessage: string;
-  };
   theme: {
     defaultMode: 'light' | 'dark' | 'system';
     light: {
@@ -136,6 +114,29 @@ export interface AppConfigJson {
         maxSize: number;
         cleanupInterval: number;
       };
+    };
+    webview: {
+      enabled: boolean;
+      url: string;
+      title: string;
+      userAgent: string;
+      javaScriptEnabled: boolean;
+      domStorageEnabled: boolean;
+      startInLoadingState: boolean;
+      scalesPageToFit: boolean;
+      allowsInlineMediaPlayback: boolean;
+      mediaPlaybackRequiresUserAction: boolean;
+      allowsFullscreenVideo: boolean;
+      mixedContentMode: 'never' | 'always' | 'compatibility';
+      cacheEnabled: boolean;
+      cacheMode: 'LOAD_DEFAULT' | 'LOAD_NO_CACHE' | 'LOAD_CACHE_ELSE_NETWORK' | 'LOAD_CACHE_ONLY';
+      allowFileAccess: boolean;
+      allowUniversalAccessFromFileURLs: boolean;
+      allowFileAccessFromFileURLs: boolean;
+      pullToRefreshEnabled: boolean;
+      timeout: number;
+      retryAttempts: number;
+      offlineMessage: string;
     };
     lazyLoading: {
       enabled: boolean;
@@ -291,7 +292,7 @@ class DynamicConfigLoader {
           appName: this.config.app.name,
           version: this.config.app.version,
           environment: this.config.app.environment,
-          webViewUrl: this.config.webView.url,
+          webViewUrl: (this.config.features as any)?.webview?.url,
         }, 'DynamicConfigLoader');
         
         return this.config;
@@ -301,8 +302,8 @@ class DynamicConfigLoader {
     } catch (error) {
       logger.error('Failed to load configuration', error as Error, null, 'DynamicConfigLoader');
       
-      // Return default configuration if loading fails
-      return this.getDefaultConfig();
+      // Fail fast - configuration is required
+      throw new Error('Failed to load app-config.json. Please ensure the file exists and is valid JSON.');
     }
   }
 
@@ -320,7 +321,7 @@ class DynamicConfigLoader {
     if (!this.config) {
       throw new Error('Configuration not loaded. Call loadConfig() first.');
     }
-    return this.config.webView;
+    return (this.config.features as any)?.webview;
   }
 
   /**
@@ -401,8 +402,8 @@ class DynamicConfigLoader {
       'app.name',
       'app.version',
       'app.environment',
-      'webView.url',
-      'webView.title',
+      'features.webview.url',
+      'features.webview.title',
       'theme.defaultMode',
     ];
 
@@ -415,7 +416,7 @@ class DynamicConfigLoader {
 
     // Validate URL format
     try {
-      new URL(config.webView.url);
+      new URL((config.features as any)?.webview?.url);
     } catch {
       throw new Error('Invalid WebView URL in configuration');
     }
@@ -442,7 +443,7 @@ class DynamicConfigLoader {
   private cacheConfig(): void {
     if (!this.config) return;
 
-    this.configCache.set('webView', this.config.webView);
+    this.configCache.set('webView', (this.config.features as any)?.webview);
     this.configCache.set('theme', this.config.theme);
     this.configCache.set('features', this.config.features);
     this.configCache.set('api', this.config.api);
@@ -457,253 +458,7 @@ class DynamicConfigLoader {
     return this.configCache.get(key);
   }
 
-  /**
-   * Get default configuration (fallback)
-   */
-  private getDefaultConfig(): AppConfigJson {
-    return {
-      app: {
-        name: 'MultiMagix',
-        version: '1.0.0',
-        buildNumber: '1',
-        environment: 'production',
-        bundleId: 'com.maigha.multimagix',
-        displayName: 'MultiMagix WebView App',
-      },
-      webView: {
-        url: 'https://www.multimagix.com',
-        title: 'MultiMagix',
-        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1',
-        javaScriptEnabled: true,
-        domStorageEnabled: true,
-        startInLoadingState: false,
-        scalesPageToFit: true,
-        allowsInlineMediaPlayback: true,
-        mediaPlaybackRequiresUserAction: false,
-        allowsFullscreenVideo: true,
-        mixedContentMode: 'compatibility',
-        cacheEnabled: true,
-        cacheMode: 'LOAD_DEFAULT',
-        allowFileAccess: false,
-        allowUniversalAccessFromFileURLs: false,
-        allowFileAccessFromFileURLs: false,
-        pullToRefreshEnabled: true,
-        timeout: 30000,
-        retryAttempts: 3,
-        offlineMessage: 'No internet connection. Please check your network settings.',
-      },
-      theme: {
-        defaultMode: 'system',
-        light: {
-          colors: {
-            primary: '#007AFF',
-            secondary: '#5856D6',
-            background: '#FFFFFF',
-            surface: '#F2F2F7',
-            error: '#FF3B30',
-            warning: '#FF9500',
-            success: '#34C759',
-            text: {
-              primary: '#000000',
-              secondary: '#8E8E93',
-              disabled: '#C7C7CC',
-            },
-            border: '#C6C6C8',
-            divider: '#C6C6C8',
-          },
-        },
-        dark: {
-          colors: {
-            primary: '#0A84FF',
-            secondary: '#5E5CE6',
-            background: '#000000',
-            surface: '#1C1C1E',
-            error: '#FF453A',
-            warning: '#FF9F0A',
-            success: '#30D158',
-            text: {
-              primary: '#FFFFFF',
-              secondary: '#8E8E93',
-              disabled: '#3A3A3C',
-            },
-            border: '#38383A',
-            divider: '#38383A',
-          },
-        },
-      },
-      features: {
-        analytics: {
-          enabled: true,
-          trackingId: 'default-tracking-id',
-          sessionTimeout: 1800000,
-        },
-        crashReporting: {
-          enabled: true,
-          serviceUrl: 'https://crash-reporting.example.com',
-          maxReportsPerSession: 10,
-        },
-        pushNotifications: {
-          enabled: false,
-          fcmSenderId: 'default-fcm-sender-id',
-          defaultChannel: 'general',
-        },
-        security: {
-          enabled: true,
-          blockedDomains: [],
-          allowedDomains: [],
-          httpsEnforcement: true,
-          certificatePinning: false,
-        },
-        performance: {
-          monitoring: true,
-          metrics: {
-            renderTime: { warning: 16, critical: 33 },
-            networkRequest: { warning: 2000, critical: 5000 },
-            webViewLoad: { warning: 3000, critical: 8000 },
-            memoryUsage: { warning: 200, critical: 500 },
-          },
-        },
-        deepLinking: {
-          enabled: true,
-          scheme: 'multimagix',
-          allowedDomains: ['multimagix.com', '*.multimagix.com'],
-          redirectToBrowser: true,
-          customScheme: 'multimagix',
-          universalLinks: {
-            enabled: false,
-            domains: ['https://yoursite.com'],
-          },
-        },
-        offline: {
-          enabled: true,
-          indicator: {
-            enabled: true,
-            position: 'top',
-            style: 'banner',
-            autoHide: true,
-            hideDelay: 3000,
-          },
-          sync: {
-            enabled: true,
-            autoSync: true,
-            syncInterval: 30000,
-            maxRetries: 3,
-          },
-          storage: {
-            enabled: true,
-            maxSize: 1000,
-            cleanupInterval: 3600000,
-          },
-        },
-        lazyLoading: {
-          enabled: true,
-          strategy: 'progressive',
-          skeletonConfig: {
-            enabled: true,
-            backgroundColor: '#F8F9FA',
-            shimmerColor: '#007AFF',
-            animationDuration: 1500,
-            showPlaceholder: true,
-          },
-          progressiveConfig: {
-            enabled: true,
-            preloadImages: true,
-            preloadScripts: true,
-            preloadStyles: true,
-            priorityOrder: ['html', 'css', 'js', 'images'],
-          },
-          cacheConfig: {
-            enabled: true,
-            maxCacheSize: 100,
-            cacheExpiry: 3600000,
-            offlineSupport: true,
-          },
-          animationConfig: {
-            type: 'fade',
-            duration: 300,
-            easing: 'ease-in-out',
-            delay: 0,
-          },
-          customLoadingStates: {
-            initial: 'Preparing to load...',
-            loading: 'Loading content...',
-            error: 'Failed to load content',
-            success: 'Content loaded successfully',
-          },
-        },
-      },
-      api: {
-        baseUrl: 'https://api.example.com',
-        timeout: 10000,
-        retryAttempts: 3,
-        endpoints: {
-          config: '/api/config',
-          analytics: '/api/analytics',
-          errors: '/api/errors',
-        },
-      },
-      logging: {
-        level: 'info',
-        enabled: true,
-        maxLogs: 1000,
-        remoteReporting: {
-          enabled: true,
-          endpoint: 'https://logs.example.com',
-          batchSize: 50,
-          interval: 30000,
-        },
-      },
-      network: {
-        timeout: 30000,
-        retryAttempts: 3,
-        offlineDetection: true,
-        connectionTypes: ['wifi', 'cellular'],
-      },
-      ui: {
-        loading: {
-          showSpinner: true,
-          text: 'Loading website...',
-          color: '#007AFF',
-        },
-        error: {
-          showRetryButton: true,
-          showGoBackButton: true,
-          customMessages: {
-            network: 'No internet connection. Please check your network settings.',
-            timeout: 'Request timed out. Please try again.',
-            server: 'Server error. Please try again later.',
-          },
-        },
-              debug: {
-        enabled: false,
-        showControls: false,
-        logLevel: 'warn',
-      },
-              watermark: {
-          enabled: true,
-          text: 'Generated by AppAnySite',
-          subtext: 'Professional WebView App Builder',
-          position: 'bottom-right',
-          opacity: 0.7,
-          color: '#007AFF',
-          fontSize: 14,
-          subtextFontSize: 12,
-          padding: 20,
-          cornerRadius: 8,
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          showInScreenshots: true,
-          showInProduction: true,
-          showInDevelopment: true,
-        },
-      },
-      metadata: {
-        generatedAt: new Date().toISOString(),
-        generatedBy: 'default-config',
-        version: '1.0.0',
-        checksum: 'default-checksum',
-      },
-    };
-  }
+
 
   /**
    * Export current configuration

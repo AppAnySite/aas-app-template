@@ -7,28 +7,6 @@
     "bundleId": "com.maigha.multimagix",
     "displayName": "MultiMagix WebView App"
   },
-  "webView": {
-    "url": "https://www.multimagix.com",
-    "title": "MultiMagix",
-    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1",
-    "javaScriptEnabled": true,
-    "domStorageEnabled": true,
-    "startInLoadingState": false,
-    "scalesPageToFit": true,
-    "allowsInlineMediaPlayback": true,
-    "mediaPlaybackRequiresUserAction": false,
-    "allowsFullscreenVideo": true,
-    "mixedContentMode": "compatibility",
-    "cacheEnabled": true,
-    "cacheMode": "LOAD_DEFAULT",
-    "allowFileAccess": false,
-    "allowUniversalAccessFromFileURLs": false,
-    "allowFileAccessFromFileURLs": false,
-    "pullToRefreshEnabled": true,
-    "timeout": 30000,
-    "retryAttempts": 3,
-    "offlineMessage": "No internet connection. Please check your network settings."
-  },
   "theme": {
     "defaultMode": "system",
     "light": {
@@ -84,44 +62,73 @@
       "fcmSenderId": "your-fcm-sender-id",
       "defaultChannel": "general"
     },
-    "security": {
+    "network": {
       "enabled": true,
-      "blockedDomains": [],
-      "allowedDomains": [],
-      "httpsEnforcement": true,
-      "certificatePinning": false
-    },
-    "performance": {
-      "monitoring": true,
-      "metrics": {
-        "renderTime": {
-          "warning": 16,
-          "critical": 33
-        },
-        "networkRequest": {
-          "warning": 2000,
-          "critical": 5000
-        },
-        "webViewLoad": {
-          "warning": 3000,
-          "critical": 8000
-        },
-        "memoryUsage": {
-          "warning": 200,
-          "critical": 500
-        }
-      }
+      "enableEventListeners": true,
+      "pingInterval": 5000,
+      "qualityMonitoring": true,
+      "connectionHistory": true
     },
     "deepLinking": {
       "enabled": true,
-      "scheme": "multimagix",
-      "allowedDomains": ["multimagix.com", "*.multimagix.com"],
-      "redirectToBrowser": true,
-      "customScheme": "multimagix",
+      "enableEventListeners": true,
+      "scheme": "appanysite",
+      "allowedDomains": ["appanysite.com", "www.appanysite.com"],
+      "redirectToBrowser": false,
+      "customScheme": "appanysite",
       "universalLinks": {
         "enabled": false,
-        "domains": ["https://multimagix.com"]
+        "domains": ["appanysite.com"]
       }
+    },
+    "security": {
+      "enabled": true,
+      "validateUrls": true,
+      "blockedDomains": [],
+      "allowedDomains": ["appanysite.com", "www.appanysite.com"],
+      "httpsEnforcement": true,
+      "certificatePinning": false,
+      "customRules": []
+    },
+    "performance": {
+      "enabled": true,
+      "enableMonitoring": true,
+      "thresholds": [
+        {
+          "type": "render_time",
+          "name": "component_render",
+          "warning": 16,
+          "critical": 33,
+          "unit": "ms"
+        },
+        {
+          "type": "network_request",
+          "name": "http_request",
+          "warning": 2000,
+          "critical": 5000,
+          "unit": "ms"
+        },
+        {
+          "type": "webview_load",
+          "name": "webview_load",
+          "warning": 3000,
+          "critical": 8000,
+          "unit": "ms"
+        },
+        {
+          "type": "memory_usage",
+          "name": "current_memory",
+          "warning": 200,
+          "critical": 500,
+          "unit": "MB"
+        }
+      ]
+    },
+    "accessibility": {
+      "enabled": true,
+      "customActions": [],
+      "enableRecommendations": true,
+      "autoDetectFeatures": true
     },
     "offline": {
       "enabled": true,
@@ -143,6 +150,29 @@
         "maxSize": 1000,
         "cleanupInterval": 3600000
       }
+    },
+    "webview": {
+      "enabled": true,
+      "url": "https://www.appanysite.com/",
+      "title": "AppAnySite",
+      "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1",
+      "javaScriptEnabled": true,
+      "domStorageEnabled": true,
+      "startInLoadingState": false,
+      "scalesPageToFit": true,
+      "allowsInlineMediaPlayback": true,
+      "mediaPlaybackRequiresUserAction": false,
+      "allowsFullscreenVideo": true,
+      "mixedContentMode": "compatibility",
+      "cacheEnabled": true,
+      "cacheMode": "LOAD_DEFAULT",
+      "allowFileAccess": false,
+      "allowUniversalAccessFromFileURLs": false,
+      "allowFileAccessFromFileURLs": false,
+      "pullToRefreshEnabled": true,
+      "timeout": 30000,
+      "retryAttempts": 3,
+      "offlineMessage": "No internet connection. Please check your network settings."
     },
     "lazyLoading": {
       "enabled": true,
@@ -201,12 +231,6 @@
       "batchSize": 50,
       "interval": 30000
     }
-  },
-  "network": {
-    "timeout": 30000,
-    "retryAttempts": 3,
-    "offlineDetection": true,
-    "connectionTypes": ["wifi", "cellular"]
   },
   "ui": {
     "loading": {

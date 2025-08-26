@@ -56,6 +56,7 @@ export enum EventType {
   NETWORK_CONNECTED = 'network:connected',
   NETWORK_DISCONNECTED = 'network:disconnected',
   NETWORK_TYPE_CHANGED = 'network:type:changed',
+  NETWORK_STATE_CHANGED = 'network:state:changed',
   
   // Performance Events
   PERFORMANCE_METRIC = 'performance:metric',
@@ -69,6 +70,10 @@ export enum EventType {
   DEEP_LINK_INITIALIZED = 'deep_link:initialized',
   DEEP_LINK_PROCESSED = 'deep_link:processed',
   DEEP_LINK_REDIRECTED = 'deep_link:redirected',
+  
+  // Accessibility Events
+  ACCESSIBILITY_STATE_CHANGED = 'accessibility:state:changed',
+  ACCESSIBILITY_EVENT = 'accessibility:event',
   
   // Offline Events
   OFFLINE_STORAGE_INITIALIZED = 'offline:storage:initialized',

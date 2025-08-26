@@ -81,8 +81,22 @@ class SecurityManager {
     const recommendations: string[] = [];
 
     try {
-      const urlObj = new URL(url);
-      const domain = urlObj.hostname.toLowerCase();
+      const urlMatch = url.match(/^https?:\/\/([^\/]+)/);
+      if (!urlMatch) {
+        const threat: SecurityEvent = {
+          type: SecurityEventType.URL_VALIDATION_FAILED,
+          threatLevel: ThreatLevel.HIGH,
+          description: `Invalid URL format: ${url}`,
+          timestamp: Date.now(),
+          source: 'SecurityManager',
+          data: { url, error: 'Invalid URL format' },
+        };
+        threats.push(threat);
+        recommendations.push('Ensure URL is properly formatted');
+        return { isValid: false, threats, warnings, recommendations };
+      }
+      
+      const domain = urlMatch[1].toLowerCase();
 
       // Check if domain is blocked
       if (this.blockedDomains.has(domain)) {
@@ -127,21 +141,22 @@ class SecurityManager {
       }
 
       // Check protocol security
-      if (urlObj.protocol !== 'https:' && urlObj.protocol !== 'http:') {
+      const protocol = url.startsWith('https://') ? 'https:' : url.startsWith('http://') ? 'http:' : 'unknown';
+      if (protocol === 'unknown') {
         const threat: SecurityEvent = {
           type: SecurityEventType.URL_VALIDATION_FAILED,
           threatLevel: ThreatLevel.HIGH,
-          description: `Unsupported protocol: ${urlObj.protocol}`,
+          description: `Unsupported protocol: ${protocol}`,
           timestamp: Date.now(),
           source: 'SecurityManager',
-          data: { url, protocol: urlObj.protocol },
+          data: { url, protocol },
         };
         threats.push(threat);
         recommendations.push('Use HTTPS protocol for security');
       }
 
       // Apply custom security rules
-      for (const [ruleName, rule] of this.securityRules) {
+      for (const [ruleName, rule] of Array.from(this.securityRules.entries())) {
         if (!rule(url)) {
           const threat: SecurityEvent = {
             type: SecurityEventType.URL_VALIDATION_FAILED,
@@ -338,7 +353,7 @@ class SecurityManager {
         break;
       case ThreatLevel.HIGH:
       case ThreatLevel.CRITICAL:
-        logger.error(`Security threat: ${event.description}`, event, 'SecurityManager');
+        logger.error(`Security threat: ${event.description}`, new Error(event.description), event, 'SecurityManager');
         break;
     }
 
@@ -387,19 +402,21 @@ class SecurityManager {
   }
 
   /**
-   * Setup default security rules
+   * Setup default security rules with enhanced protection
    */
   private setupDefaultSecurityRules(): void {
     // HTTPS enforcement rule
     this.addSecurityRule('https_enforcement', (url) => {
-      return url.startsWith('https://') || url.startsWith('http://localhost');
+      return url.startsWith('https://') || url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1');
     });
 
     // Domain validation rule
     this.addSecurityRule('domain_validation', (url) => {
       try {
-        const urlObj = new URL(url);
-        return urlObj.hostname.length > 0;
+        const urlMatch = url.match(/^https?:\/\/([^\/]+)/);
+        if (!urlMatch) return false;
+        const hostname = urlMatch[1];
+        return hostname.length > 0 && hostname.length <= 253;
       } catch {
         return false;
       }
@@ -408,16 +425,59 @@ class SecurityManager {
     // Port validation rule
     this.addSecurityRule('port_validation', (url) => {
       try {
-        const urlObj = new URL(url);
-        const port = urlObj.port;
-        if (port) {
-          const portNum = parseInt(port, 10);
-          return portNum >= 1 && portNum <= 65535;
+        const urlMatch = url.match(/^https?:\/\/[^:]+:(\d+)/);
+        if (!urlMatch) return true; // No port specified, use default
+        const portNum = parseInt(urlMatch[1], 10);
+        return portNum >= 1 && portNum <= 65535;
+      } catch {
+        return false;
+      }
+    });
+
+    // IP address validation rule
+    this.addSecurityRule('ip_validation', (url) => {
+      try {
+        const urlMatch = url.match(/^https?:\/\/([^\/]+)/);
+        if (!urlMatch) return false;
+        const hostname = urlMatch[1];
+        
+        // Allow localhost and private IP ranges
+        if (hostname === 'localhost' || hostname === '127.0.0.1') return true;
+        
+        // Block private IP ranges in production
+        const privateIPRanges = [
+          /^10\./,
+          /^172\.(1[6-9]|2[0-9]|3[0-1])\./,
+          /^192\.168\./,
+        ];
+        
+        if (privateIPRanges.some(range => range.test(hostname))) {
+          return false; // Block private IPs
         }
+        
         return true;
       } catch {
         return false;
       }
+    });
+
+    // Content type validation rule
+    this.addSecurityRule('content_type_validation', (url) => {
+      const dangerousExtensions = [
+        '.exe', '.bat', '.cmd', '.com', '.pif', '.scr', '.vbs', '.js', '.jar', '.apk'
+      ];
+      return !dangerousExtensions.some(ext => url.toLowerCase().includes(ext));
+    });
+
+    // URL length validation rule
+    this.addSecurityRule('url_length_validation', (url) => {
+      return url.length <= 2048; // Reasonable URL length limit
+    });
+
+    // Special character validation rule
+    this.addSecurityRule('special_char_validation', (url) => {
+      const dangerousChars = ['<', '>', '"', "'", '&', 'script', 'javascript', 'vbscript'];
+      return !dangerousChars.some(char => url.toLowerCase().includes(char));
     });
   }
 

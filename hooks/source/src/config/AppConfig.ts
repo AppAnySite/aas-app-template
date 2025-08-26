@@ -26,12 +26,138 @@ class ConfigurationManager {
     const environment = this.getEnvironment();
     
     const baseConfig: AppConfig = {
-      name: 'MultiMagix',
+      name: '',
       version: '1.0.0',
       buildNumber: '1',
       environment,
+      bundleId: '',
+      displayName: '',
       apiBaseUrl: '',
-      webViewUrl: 'https://www.multimagix.com',
+      theme: {
+        defaultMode: 'system',
+        light: {
+          colors: {
+            primary: '#007AFF',
+            secondary: '#5856D6',
+            background: '#FFFFFF',
+            surface: '#F2F2F7',
+            error: '#FF3B30',
+            warning: '#FF9500',
+            success: '#34C759',
+            text: {
+              primary: '#000000',
+              secondary: '#8E8E93',
+              disabled: '#C7C7CC'
+            },
+            border: '#C6C6C8',
+            divider: '#C6C6C8'
+          },
+          spacing: {
+            xs: 4,
+            sm: 8,
+            md: 16,
+            lg: 24,
+            xl: 32,
+            xxl: 48
+          },
+          typography: {
+            fontFamily: {
+              regular: 'System',
+              medium: 'System',
+              bold: 'System'
+            },
+            fontSize: {
+              xs: 12,
+              sm: 14,
+              md: 16,
+              lg: 18,
+              xl: 20,
+              xxl: 24
+            },
+            lineHeight: {
+              xs: 16,
+              sm: 20,
+              md: 24,
+              lg: 28,
+              xl: 32,
+              xxl: 36
+            }
+          },
+          borderRadius: {
+            xs: 2,
+            sm: 4,
+            md: 8,
+            lg: 12,
+            xl: 16,
+            round: 50
+          }
+        },
+        dark: {
+          colors: {
+            primary: '#0A84FF',
+            secondary: '#5E5CE6',
+            background: '#000000',
+            surface: '#1C1C1E',
+            error: '#FF453A',
+            warning: '#FF9F0A',
+            success: '#30D158',
+            text: {
+              primary: '#FFFFFF',
+              secondary: '#8E8E93',
+              disabled: '#3A3A3C'
+            },
+            border: '#38383A',
+            divider: '#38383A'
+          },
+          spacing: {
+            xs: 4,
+            sm: 8,
+            md: 16,
+            lg: 24,
+            xl: 32,
+            xxl: 48
+          },
+          typography: {
+            fontFamily: {
+              regular: 'System',
+              medium: 'System',
+              bold: 'System'
+            },
+            fontSize: {
+              xs: 12,
+              sm: 14,
+              md: 16,
+              lg: 18,
+              xl: 20,
+              xxl: 24
+            },
+            lineHeight: {
+              xs: 16,
+              sm: 20,
+              md: 24,
+              lg: 28,
+              xl: 32,
+              xxl: 36
+            }
+          },
+          borderRadius: {
+            xs: 2,
+            sm: 4,
+            md: 8,
+            lg: 12,
+            xl: 16,
+            round: 50
+          }
+        }
+      },
+      features: {
+        network: { enabled: true },
+        security: { enabled: true },
+        performance: { enabled: true },
+        accessibility: { enabled: true },
+        deepLinking: { enabled: true },
+        offline: { enabled: true }
+      },
       enableAnalytics: true,
       enableCrashReporting: true,
       enablePushNotifications: false,
@@ -42,7 +168,6 @@ class ConfigurationManager {
         return {
           ...baseConfig,
           apiBaseUrl: 'http://localhost:3000/api',
-          webViewUrl: 'https://www.multimagix.com',
           enableAnalytics: false,
           enableCrashReporting: false,
         };
@@ -51,7 +176,6 @@ class ConfigurationManager {
         return {
           ...baseConfig,
           apiBaseUrl: 'https://staging-api.example.com',
-          webViewUrl: 'https://staging.example.com',
           enableAnalytics: true,
           enableCrashReporting: true,
         };
@@ -60,7 +184,6 @@ class ConfigurationManager {
         return {
           ...baseConfig,
           apiBaseUrl: 'https://api.example.com',
-          webViewUrl: 'https://www.multimagix.com',
           enableAnalytics: true,
           enableCrashReporting: true,
           enablePushNotifications: true,
@@ -74,14 +197,10 @@ class ConfigurationManager {
   /**
    * Get current environment
    */
-  private getEnvironment(): 'development' | 'staging' | 'production' {
-    if (__DEV__) {
-      return 'development';
-    }
-    
-    // In a real app, you might check for staging builds
-    // For now, we'll default to production for release builds
-    return 'production';
+    private getEnvironment(): 'development' | 'staging' | 'production' {
+    // In React Native, we can't easily detect development mode without __DEV__
+    // For now, default to development
+    return 'development';
   }
 
   /**
@@ -103,7 +222,7 @@ class ConfigurationManager {
    */
   public getWebViewConfig(): WebViewConfig {
     return {
-      url: this.config.webViewUrl,
+      url: (this.config.features as any)?.webview?.url || '',
       title: this.config.name,
       userAgent: this.getUserAgent(),
       allowFileAccess: false,
@@ -234,16 +353,16 @@ class ConfigurationManager {
   }
 
   /**
-   * Validate configuration
+   * Validate configuration with comprehensive checks
    */
   public validateConfig(): boolean {
     const requiredFields: (keyof AppConfig)[] = [
       'name',
       'version',
       'environment',
-      'webViewUrl',
     ];
 
+    // Check required fields
     for (const field of requiredFields) {
       if (!this.config[field]) {
         console.error(`Missing required configuration field: ${field}`);
@@ -251,11 +370,42 @@ class ConfigurationManager {
       }
     }
 
+    // Validate URL format
+    try {
+      const webviewUrl = (this.config.features as any)?.webview?.url;
+      if (webviewUrl) {
+        new URL(webviewUrl);
+      }
+    } catch (error) {
+      console.error('Invalid WebView URL in configuration:', (this.config.features as any)?.webview?.url);
+      return false;
+    }
+
+    // Validate environment
+    const validEnvironments = ['development', 'staging', 'production'];
+    if (!validEnvironments.includes(this.config.environment)) {
+      console.error('Invalid environment in configuration:', this.config.environment);
+      return false;
+    }
+
+    // Validate version format
+    const versionRegex = /^\d+\.\d+\.\d+$/;
+    if (!versionRegex.test(this.config.version)) {
+      console.error('Invalid version format in configuration:', this.config.version);
+      return false;
+    }
+
+    // Validate build number
+    if (!this.config.buildNumber || isNaN(Number(this.config.buildNumber))) {
+      console.error('Invalid build number in configuration:', this.config.buildNumber);
+      return false;
+    }
+
     return true;
   }
 
   /**
-   * Get configuration for specific feature
+   * Get configuration for specific feature with enhanced defaults
    */
   public getFeatureConfig(feature: string): any {
     const featureConfigs: Record<string, any> = {
@@ -263,21 +413,62 @@ class ConfigurationManager {
         enabled: this.config.enableAnalytics,
         trackingId: 'your-tracking-id',
         sessionTimeout: 30 * 60 * 1000, // 30 minutes
+        batchSize: 20,
+        flushInterval: 30000, // 30 seconds
+        maxQueueSize: 1000,
       },
       crashReporting: {
         enabled: this.config.enableCrashReporting,
         serviceUrl: 'https://crash-reporting.example.com',
         maxReportsPerSession: 10,
+        includeDeviceInfo: true,
+        includeUserInfo: true,
+        includeScreenshots: false,
       },
       pushNotifications: {
         enabled: this.config.enablePushNotifications,
         fcmSenderId: 'your-fcm-sender-id',
         defaultChannel: 'general',
+        soundEnabled: true,
+        badgeEnabled: true,
+        alertEnabled: true,
       },
       webView: {
         timeout: 30000, // 30 seconds
         retryAttempts: 3,
         offlineMessage: 'No internet connection. Please check your network settings.',
+        cacheEnabled: true,
+        cacheSize: 50 * 1024 * 1024, // 50MB
+        userAgent: this.getUserAgent(),
+        allowFileAccess: false,
+        allowUniversalAccessFromFileURLs: false,
+        allowFileAccessFromFileURLs: false,
+      },
+      network: {
+        timeout: 30000,
+        retryAttempts: 3,
+        offlineDetection: true,
+        connectionTypes: ['wifi', 'cellular'],
+        qualityMonitoring: true,
+        pingInterval: 60000, // 1 minute
+      },
+      security: {
+        validateUrls: true,
+        blockSuspiciousUrls: true,
+        requireHttps: true,
+        certificatePinning: false,
+        allowedDomains: [],
+        blockedDomains: [],
+      },
+      performance: {
+        monitoring: true,
+        metrics: {
+          renderTime: { warning: 16, critical: 33 },
+          networkRequest: { warning: 2000, critical: 5000 },
+          webViewLoad: { warning: 3000, critical: 8000 },
+          memoryUsage: { warning: 200, critical: 500 },
+        },
+        sampling: 0.1, // 10% of sessions
       },
     };
 

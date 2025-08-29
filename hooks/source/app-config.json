@@ -5,6 +5,7 @@
     "buildNumber": "1",
     "environment": "production",
     "bundleId": "com.maigha.multimagix",
+    "androidPackageName": "com.maigha.multimagix",
     "displayName": "MultiMagix WebView App"
   },
   "theme": {

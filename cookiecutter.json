@@ -1,6 +1,6 @@
 {
-    "project_name": "AppAnySite",
-    "app_name": "AppAnySite",
-    "bundle_identifier": "com.maigha.appanysite",
-    "android_package_name": "com.maigha.appanysite"
+  "project_name": "MultiMagix",
+  "app_name": "MultiMagix WebView App",
+  "bundle_identifier": "com.maigha.multimagix",
+  "android_package_name": "com.maigha.multimagix"
 }

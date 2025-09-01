@@ -8,6 +8,72 @@
     "androidPackageName": "com.maigha.multimagix",
     "displayName": "MultiMagix WebView App"
   },
+  "build": {
+    "android": {
+      "keystore": {
+        "enabled": true,
+        "autoCreate": true,
+        "storeType": "PKCS12",
+        "keyAlgorithm": "RSA",
+        "keySize": 2048,
+        "validity": 10000,
+        "defaultPassword": "hrushikesh",
+        "defaultAlias": "appanysite-key-alias",
+        "certificateInfo": {
+          "commonName": "Vetagiri Hrushikesh",
+          "organizationalUnit": "Maigha India",
+          "organization": "Maigha Media",
+          "locality": "Nellore",
+          "state": "Andhra Pradesh",
+          "country": "IN"
+        }
+      },
+      "gradle": {
+        "version": "8.0",
+        "androidGradlePlugin": "8.0.0",
+        "compileSdk": 34,
+        "targetSdk": 34,
+        "minSdk": 21,
+        "buildTools": "34.0.0"
+      },
+      "signing": {
+        "debug": {
+          "enabled": false,
+          "useDefault": true
+        },
+        "release": {
+          "enabled": true,
+          "useKeystore": true,
+          "v1SigningEnabled": true,
+          "v2SigningEnabled": true,
+          "v3SigningEnabled": true
+        }
+      },
+      "output": {
+        "debugApk": "build/android/debug",
+        "releaseApk": "build/android/release",
+        "aab": "build/android/aab",
+        "keystores": "build/android/keystores"
+      }
+    },
+    "bundle": {
+      "enabled": true,
+      "output": "build/bundles",
+      "dev": false,
+      "platform": "android",
+      "entryFile": "index.js",
+      "bundleName": "complete-app.bundle",
+      "assetsDest": "assets",
+      "sourceMap": false,
+      "resetCache": false
+    },
+    "cleanup": {
+      "enabled": true,
+      "removeNodeModules": false,
+      "removeBuildArtifacts": true,
+      "removeBundles": false
+    }
+  },
   "theme": {
     "defaultMode": "system",
     "light": {

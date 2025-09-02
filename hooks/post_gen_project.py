@@ -16,44 +16,20 @@ def main():
     hook_dir = os.path.dirname(hook_file)
     template_dir = os.path.abspath(os.path.join(hook_dir, os.pardir))
     
-    # If we're in a temporary directory (cookiecutter creates a copy), 
-    # we need to find the original template directory
-    if not os.path.exists(os.path.join(template_dir, "hooks", "source")):
-        # Try to find the original template by looking for the actual template path
-        # The template should be in aas-core-appgen/.template or aas-app-template
-        possible_template_paths = [
-            "/Users/hvetagir/Documents/aas-core-appgen/.template",
-            "/Users/hvetagir/Documents/aas-app-template"
-        ]
-        
-        for possible_path in possible_template_paths:
-            source_check = os.path.join(possible_path, "hooks", "source")
-            if os.path.exists(source_check):
-                template_dir = possible_path
-                break
-        else:
-            # Fallback: try to find template directory by walking up from project directory
-            current_dir = project_dir
-            template_dir = None
-            
-            while current_dir != os.path.dirname(current_dir):  # Stop at root
-                # Check for both "hooks" and ".template/hooks"
-                hooks_dir = os.path.join(current_dir, "hooks")
-                template_hooks_dir = os.path.join(current_dir, ".template", "hooks")
-                
-                if os.path.exists(hooks_dir) and os.path.isdir(hooks_dir):
-                    template_dir = current_dir
-                    break
-                elif os.path.exists(template_hooks_dir) and os.path.isdir(template_hooks_dir):
-                    template_dir = os.path.join(current_dir, ".template")
-                    break
-                current_dir = os.path.dirname(current_dir)
+    print(f"🔍 Debug: project_dir = {project_dir}")
+    print(f"🔍 Debug: hook_file = {hook_file}")
+    print(f"🔍 Debug: hook_dir = {hook_dir}")
+    print(f"🔍 Debug: template_dir = {template_dir}")
     
-    if template_dir is None:
-        print("❌ Error: Could not find template directory with hooks folder")
-        return
-    
+    # Check if the template directory has the hooks/source folder
     source_dir = os.path.join(template_dir, "hooks", "source")
+    
+    if not os.path.exists(source_dir):
+        print(f"❌ Error: Source directory not found at {source_dir}")
+        print(f"❌ Template directory contents: {os.listdir(template_dir) if os.path.exists(template_dir) else 'DOES NOT EXIST'}")
+        if os.path.exists(template_dir) and os.path.exists(os.path.join(template_dir, "hooks")):
+            print(f"❌ Hooks directory contents: {os.listdir(os.path.join(template_dir, 'hooks'))}")
+        return
     
     print("🚀 Post-generation: Copying source files...")
     

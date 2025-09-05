@@ -1,4 +1,4 @@
 {
-  "name": "{{cookiecutter.app_name}}",
+  "name": "{{cookiecutter.project_name}}",
   "displayName": "{{cookiecutter.app_name}}"
 }
